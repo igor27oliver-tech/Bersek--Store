@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 32px; }
+        label { display: block; margin-top: 12px; }
+        textarea { width: 100%; height: 160px; }
+        input, button, select, textarea { font-size: 14px; }
+        .row { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
+        .row input { flex: 1; }
+        .response { margin-top: 16px; white-space: pre-wrap; background: #f8f8f8; padding: 12px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Teste de API</h1>
+    <p>Use este arquivo para testar requisições GET, POST, PUT e DELETE na aplicação Spring Boot.</p>
+
+    <div class="row">
+        <label>URL base:</label>
+        <input id="baseUrl" type="text" value="http://localhost:8080/admin/buscar" />
+    </div>
+
+    <div class="row">
+        <label>Usuário:</label>
+        <input id="user" type="text" value="admin" />
+        <label>Senha:</label>
+        <input id="password" type="password" value="123" />
+    </div>
+
+    <div class="row">
+        <label>Método:</label>
+        <select id="method">
+            <option>GET</option>
+            <option>POST</option>
+            <option>PUT</option>
+            <option>DELETE</option>
+        </select>
+        <button onclick="sendRequest()">Enviar</button>
+    </div>
+
+    <div>
+        <label>JSON body (para POST/PUT):</label>
+        <textarea id="body">{
+    "example": "valor"
+}</textarea>
+    </div>
+
+    <div class="response" id="result">Resultado aparecerá aqui.</div>
+
+    <script>
+        async function sendRequest() {
+            const url = document.getElementById('baseUrl').value;
+            const method = document.getElementById('method').value;
+            const user = document.getElementById('user').value;
+            const password = document.getElementById('password').value;
+            const body = document.getElementById('body').value;
+
+            const headers = new Headers();
+            headers.append('Authorization', 'Basic ' + btoa(user + ':' + password));
+            headers.append('Content-Type', 'application/json');
+
+            const options = { method, headers };
+            if (method === 'POST' || method === 'PUT') {
+                try {
+                    options.body = JSON.stringify(JSON.parse(body));
+                } catch (e) {
+                    document.getElementById('result').textContent = 'JSON inválido: ' + e.message;
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const text = await response.text();
+                document.getElementById('result').textContent = `Status: ${response.status} ${response.statusText}\n\n` + text;
+            } catch (error) {
+                document.getElementById('result').textContent = 'Erro: ' + error;
+            }
+        }
+    </script>
+</body>
+</html>

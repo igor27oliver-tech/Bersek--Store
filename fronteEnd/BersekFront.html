@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Buscar Banda</title>
+</head>
+<body>
+  <h1>Buscar Banda</h1>
+  <input id="banda" placeholder="Digite o nome da banda">
+  <button id="buscar">Buscar</button>
+  <pre id="out" style="white-space:pre-wrap;border:1px solid #ddd;padding:8px;margin-top:12px;"></pre>
+
+  <script>
+    document.getElementById('buscar').onclick = async function () {
+      const b = document.getElementById('banda').value.trim();
+      const out = document.getElementById('out');
+      if (!b) { out.textContent = 'Informe o nome da banda.'; return; }
+      out.textContent = 'Buscando...';
+      try {
+        const res = await fetch('/admin/buscar?banda=' + encodeURIComponent(b), { method: 'GET', headers: { 'Accept': 'application/json' } });
+        if (!res.ok) { out.textContent = 'Erro: ' + res.status; return; }
+        const json = await res.json();
+        out.textContent = JSON.stringify(json, null, 2);
+      } catch (e) { out.textContent = 'Erro: ' + e.message; }
+    };
+  </script>
+</body>
+</html>
