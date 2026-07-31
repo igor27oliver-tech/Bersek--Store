@@ -28,4 +28,5 @@ public class Sacola {
             inverseJoinColumns = @JoinColumn(name = "id_product")
     )
     private List<ProdutoEntity> listaProduto;
+
 }
