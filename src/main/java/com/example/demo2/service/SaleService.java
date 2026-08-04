@@ -4,9 +4,11 @@ import DTO.*;
 import com.example.demo2.model.ProdutoEntity;
 import com.example.demo2.model.Sacola;
 import com.example.demo2.model.Sale;
+import com.example.demo2.model.Usuario;
 import com.example.demo2.repository.EstoqueRepository;
 import com.example.demo2.repository.SacolaRepository;
 import com.example.demo2.repository.SaleRepository;
+import com.example.demo2.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,8 @@ public class SaleService {
                 @Autowired EstoqueRepository estoqueRepository;
                 @Autowired
                 SacolaRepository sacolaepository;
+                @Autowired
+                 UserRepository userRepository;
 
 
     // metodo comprar
@@ -54,53 +58,73 @@ public class SaleService {
     }
     // sacola (Carrinho)
 
-    public SacolaResponse addOnSacola(SacolaRequest request) {
-
-        List<ProdutoEntity> produtos = estoqueRepository.findAllById(request.idsProdutos());
-
+    public SacolaResponse addOnSacola(Long idCliente , SacolaRequest sacolaRequest) {
+        Usuario usuario = userRepository.findById(idCliente).orElseThrow(()-> new RuntimeException("usuario não encontrado"));
+        List<ProdutoEntity> produtos = estoqueRepository.findAllById(sacolaRequest.idsProdutos());
         if (produtos.isEmpty()) {
             throw new RuntimeException("Nenhum produto válido encontrado para os IDs informados.");
         }
 
-        Sacola sacola = new Sacola();
-        sacola.setListaProduto(produtos);
-        sacolaepository.save(sacola);
 
-        SacolaResponse sacolaResponse = new SacolaResponse();
-        sacolaResponse.setListaProduto(sacola.getListaProduto());
-        sacolaResponse.setIdSacola(sacola.getIdSacola());
-        int valorTotal = 0;
-        for(ProdutoEntity sacola1 : sacola.getListaProduto()){
-            valorTotal += sacola1.getValorProduto();
-            sacolaResponse.setValorTotal(valorTotal);
+        if (usuario.getSacola() == null){
+            Sacola sacola = new Sacola();
+            sacola.setListaProduto(produtos);
+            usuario.setSacola(sacola);
+            sacolaepository.save(sacola);
+            userRepository.save(usuario);
+
         }
+        else {
+           usuario.getSacola().getListaProduto().addAll(produtos);
+           sacolaepository.save(usuario.getSacola());
+        }
+        SacolaResponse sacolaResponse = new SacolaResponse();
+        sacolaResponse.setIdSacola(usuario.getSacola().getIdSacola());
+        sacolaResponse.setListaProduto(usuario.getSacola().getListaProduto());
+        int valorTotal = 0;
+            for (ProdutoEntity produto1 : sacolaResponse.getListaProduto()) {
+                valorTotal += produto1.getValorProduto();
+
+
+            }
+
         sacolaResponse.setValorTotal(valorTotal);
 
+    return  sacolaResponse;
 
-        return sacolaResponse;
+
+
+
     }
     @Transactional
-    public SacolaResponse excluirItemSacola(Long idSacola, Long idPd) {
-        Sacola sacola = sacolaepository.findById(idSacola)
-                .orElseThrow(() -> new RuntimeException("Sacola não encontrada: " + idSacola));
+    public SacolaResponse excluirItemSacola(Long idCliente,long idPd) {
+       Usuario usuario = userRepository.findById(idCliente).orElseThrow(() -> new RuntimeException("usuario não encontrado"));
 
-        List<ProdutoEntity> listOnSacola = new ArrayList<>(sacola.getListaProduto());
-        listOnSacola.removeIf(produto -> produto.getIdProduct().equals(idPd));
+        if (usuario.getSacola() == null) {
+            throw new RuntimeException("Usuário não possui sacola");
+        }
 
-        sacola.setListaProduto(listOnSacola);
-        sacolaepository.save(sacola);
+       Sacola sacola = sacolaepository.findById(usuario.getSacola().getIdSacola()).orElseThrow(() -> new RuntimeException("sacola inexistente"));
 
+       List<ProdutoEntity> listOnSacola = new ArrayList<>(sacola.getListaProduto());
+       listOnSacola.removeIf(produtoEntity -> produtoEntity.getIdProduct().equals(idPd));
+       sacola.setListaProduto(listOnSacola);
+       sacolaepository.save(sacola);
         SacolaResponse sacolaResponse = new SacolaResponse();
-        sacolaResponse.setIdSacola(sacola.getIdSacola());
+        sacolaResponse.setIdSacola(usuario.getSacola().getIdSacola());
         sacolaResponse.setListaProduto(sacola.getListaProduto());
-       int valorTotal = 0;
-       for (ProdutoEntity sacola1 : sacola.getListaProduto()) {
-           valorTotal += sacola1.getValorProduto();
+        int valorTotal = 0;
+        for (ProdutoEntity produto1 : sacolaResponse.getListaProduto()) {
+            valorTotal += produto1.getValorProduto();
 
-       }
-       sacolaResponse.setValorTotal(valorTotal);
 
+        }
+        sacolaResponse.setValorTotal(valorTotal);
         return sacolaResponse;
+
+
+
+
     }
 
     public SacolaResponse finalizarCarrinho(long idSacola) {

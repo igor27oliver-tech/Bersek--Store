@@ -1,14 +1,16 @@
 package com.example.demo2.controller;
 
+
 import DTO.*;
 import com.example.demo2.model.ProdutoEntity;
 import com.example.demo2.service.PayService;
 import com.example.demo2.service.SaleService;
+import com.example.demo2.service.UserService;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -18,6 +20,8 @@ public class UserController{
     PayService payService;
     @Autowired
     SaleService saleService;
+    @Autowired
+    UserService userService;
     @PostMapping ("/metodoCompra")
     public SaleResponse saleResponse (@RequestParam Long idProduct){
      return    saleService.metodoCompra(idProduct);
@@ -29,8 +33,9 @@ public class UserController{
     }
 
     @PostMapping ("/carrinho")
-    public SacolaResponse addOnCarrinho(@RequestBody SacolaRequest sacolaRequest){
-       return saleService.addOnSacola( sacolaRequest );
+    public SacolaResponse addOnCarrinho(Authentication authentication, @RequestBody SacolaRequest sacolaRequest){
+        Long idClient = (Long) authentication.getPrincipal();
+       return saleService.addOnSacola(idClient, sacolaRequest );
 
     }
     @PostMapping ("/finishCarrinho")
@@ -47,6 +52,14 @@ public class UserController{
     public PayResponse pagamento(@RequestBody PayRequest payRequest){
        return payService.confirmationPay(payRequest);
     }
+    @PostMapping ("/cadastro")
+    public UserResponse register (@RequestBody CreateNewUser  createNewUser){
+       return userService.createNewUser(createNewUser);
 
+    }
+    @PostMapping ("/login")
+    public String login (@RequestParam String email, @RequestParam String senha){
+        return userService.login(email,senha);
+    }
 
 }
