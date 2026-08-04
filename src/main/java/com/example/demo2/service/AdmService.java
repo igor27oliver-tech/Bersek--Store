@@ -1,13 +1,14 @@
 package com.example.demo2.service;
 
 import DTO.*;
+import com.example.demo2.config.JwtService;
+import com.example.demo2.model.Admin;
 import com.example.demo2.model.Banda;
 import com.example.demo2.model.Musica;
 import com.example.demo2.model.ProdutoEntity;
-import com.example.demo2.repository.BandaRepository;
-import com.example.demo2.repository.EstoqueRepository;
-import com.example.demo2.repository.MusicRepository;
+import com.example.demo2.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
@@ -23,6 +24,12 @@ public class AdmService {
     EstoqueRepository estoqueRepository;
     @Autowired
     MusicRepository musicRepository;
+    @Autowired
+    AdminRepository adminRepository;
+    @Autowired
+    JwtService jwtService;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     public MusicBrainzResponse saveBand(MusicBrainzResponse response) {
         Banda banda = new Banda();
@@ -114,6 +121,16 @@ public class AdmService {
 
 
 
+
+    }
+
+    public String login (String email, String password){
+      Admin admin  = adminRepository.findByEmailAdmin(email).orElseThrow(() -> new RuntimeException("Senha ou usuario não encontrado"));
+        boolean senhaCorret = passwordEncoder.matches(password,admin.getPasswordAdmin());
+        if (!senhaCorret){
+            throw new RuntimeException("senha incorreta");
+        }
+        return jwtService.generateToken(admin.getId(),"ADMIN");
 
     }
 

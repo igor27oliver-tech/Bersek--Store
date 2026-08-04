@@ -36,6 +36,6 @@ public class UserService {
        if (!senhaCorreta) {
            throw new RuntimeException("senha incorreta");
        }
-       return jwtService.generateToken(usuario.getIdClient());
+       return jwtService.generateToken(usuario.getIdClient(),"USER");
    }
 }

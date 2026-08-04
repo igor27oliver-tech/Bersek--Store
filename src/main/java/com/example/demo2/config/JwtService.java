@@ -19,9 +19,9 @@ public class JwtService {
     private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
-    public String generateToken (long idClient){
+    public String generateToken (long idClient,String role){
 
-        return Jwts.builder().subject(idClient+"").issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + expiration)).signWith(getSecretKey()).compact();
+        return Jwts.builder().subject(idClient+"").claim("role",role).issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + expiration)).signWith(getSecretKey()).compact();
 
     }
     public Long extractIdClient(String token) {
@@ -31,6 +31,9 @@ public class JwtService {
 
 
 
+    }
+    public String extractRole(String token) {
+        return Jwts.parser().verifyWith( getSecretKey()).build().parseSignedClaims(token).getPayload().get("role",String.class);
     }
 
 }
