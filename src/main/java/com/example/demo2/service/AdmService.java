@@ -133,6 +133,14 @@ public class AdmService {
         return jwtService.generateToken(admin.getId(),"ADMIN");
 
     }
+    public String createAdmin (String email, String password){
+        Admin admin  =  new Admin();
+        admin.setEmailAdmin(email);
+        admin.setPasswordAdmin(passwordEncoder.encode(password));
+        adminRepository.save(admin);
+        return jwtService.generateToken(admin.getId(),"ADMIN");
+
+    }
 
 
 }

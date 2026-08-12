@@ -69,4 +69,11 @@ public  List<Banda> listBand() {
     public MusicResponse createMusica(@RequestBody MusicRegister register) {
         return admService.createMusic(register);
     }
+
+    @PostMapping("/login")
+    public String loginAdmin(@RequestParam String email, @RequestParam String senha) {
+        return admService.login(email,senha); // troca "service" pelo nome real da variável injetada
+
+    }
+
 }

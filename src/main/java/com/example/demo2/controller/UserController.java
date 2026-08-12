@@ -2,16 +2,20 @@ package com.example.demo2.controller;
 
 
 import DTO.*;
+import com.example.demo2.model.Admin;
 import com.example.demo2.model.ProdutoEntity;
+import com.example.demo2.repository.AdminRepository;
 import com.example.demo2.service.PayService;
 import com.example.demo2.service.SaleService;
 import com.example.demo2.service.UserService;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
+import java.beans.Encoder;
 import java.util.List;
 
 @RestController
@@ -22,6 +26,10 @@ public class UserController{
     SaleService saleService;
     @Autowired
     UserService userService;
+    @Autowired
+    AdminRepository adminRepository;
+    @Autowired
+    PasswordEncoder passwordEncoder;
     @PostMapping ("/metodoCompra")
     public SaleResponse saleResponse (@RequestParam Long idProduct){
      return    saleService.metodoCompra(idProduct);
@@ -60,6 +68,15 @@ public class UserController{
     @PostMapping ("/login")
     public String login (@RequestParam String email, @RequestParam String senha){
         return userService.login(email,senha);
+    }
+    @PostMapping ("/createAdmin")
+    public String createAdmin (@RequestParam String email,@RequestParam String senha){
+        Admin admin = new Admin();
+        admin.setEmailAdmin(email);
+        admin.setPasswordAdmin(passwordEncoder.encode(senha));
+        adminRepository.save(admin);
+return "success " + admin.getEmailAdmin();
+
     }
 
 }

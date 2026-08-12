@@ -35,7 +35,8 @@ import java.util.List;
                     .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                            .requestMatchers("/OnEstoque", "/radio", "/login", "/cadastro").permitAll() // só ver produtos + rádio
+                            .requestMatchers("/OnEstoque", "/radio", "/login", "/cadastro","/admin/login","/createAdmin").permitAll()// só ver produtos + rádio
+                            .requestMatchers("/admin/**").hasAuthority("ADMIN")
                             .anyRequest().authenticated() // todo o resto exige login
                     )
                     .addFilterBefore(jwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
